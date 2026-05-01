@@ -9,6 +9,8 @@ PORT = 8080
 # SERVER SETUP
 # ========================
 def run_server():
+    """Initialize TCP server and create worker threads for accepted connections."""
+    
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #TCP internet socket
     server_socket.bind((HOST, PORT)) # for hosting (server)
     server_socket.listen(10)
@@ -36,7 +38,7 @@ def run_server():
 # CONNECTION HANDLING
 # ========================
 def handle_client(client_socket):
-    """Processes an incoming HTTP request from a single client connection."""
+    """Handles the lifecycle of a single HTTP client connection in a dedicated thread."""
 
     thread_id = threading.get_ident()
 
