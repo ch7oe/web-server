@@ -1,4 +1,6 @@
 import socket
+import threading
+import time
 
 HOST = "127.0.0.1"
 PORT = 8080
@@ -9,7 +11,7 @@ PORT = 8080
 def run_server():
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #TCP internet socket
     server_socket.bind((HOST, PORT)) # for hosting (server)
-    server_socket.listen(1)
+    server_socket.listen(10)
 
     print(f"Server is now listening on {HOST}:{PORT} 👂🏾")
 
@@ -17,7 +19,13 @@ def run_server():
         while True:
             communication_socket, address = server_socket.accept() 
             print(f"Connected to {address}")
-            handle_client(communication_socket)       
+            
+            thread = threading.Thread(
+                target=handle_client,
+                args=(communication_socket,)
+            )
+            thread.start() # start thread activity 
+
     except KeyboardInterrupt: 
         print("\nServer shutting down ✌🏾")
     finally:
@@ -30,6 +38,8 @@ def run_server():
 def handle_client(client_socket):
     """Processes an incoming HTTP request from a single client connection."""
 
+    thread_id = threading.get_ident()
+
     request_text = client_socket.recv(1024).decode("utf-8") # decode data from socket using UTF-8
     print("Raw request:")
     print(request_text)
@@ -39,10 +49,18 @@ def handle_client(client_socket):
         return
 
     request = parse_request(request_text)
+
     if request is None:
         response = build_response(400, "Bad Request")
     else:
         path = request["path"]
+
+        print(f"Path: {path}")
+        print(f"Thead ID: {thread_id}")
+
+        # simulate slow request
+        time.sleep(5)
+        
         file_path = resolve_requested_path(path)
         file_contents = read_file(file_path)
 
